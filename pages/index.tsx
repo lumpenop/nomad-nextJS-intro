@@ -1,19 +1,34 @@
 import SEO from "../components/SEO";
 import { Result } from "../types/movie";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 interface Props {
   results: Result[];
 }
 
 export default function Home({ results }: Props) {
+  const router = useRouter();
+  const onClick = (id: number, title: string) => {
+    router.push(`/movies/${title}/${id}`);
+  };
   return (
     <div className="container">
       <SEO title="Home" />
       <h1 className="active">Hello</h1>
-      {movies?.map((movie) => (
-        <div className="movie" key={movie.id}>
+
+      {results?.map((movie) => (
+        <div
+          onClick={() => onClick(movie.id, movie.original_title)}
+          className="movie"
+          key={movie.id}
+        >
           <img src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`} />
-          <h4>{movie.original_title}</h4>
+          <h4>
+            <Link href={`/movies/${movie.original_title}/${movie.id}`}>
+              <a>{movie.original_title}</a>
+            </Link>
+          </h4>
         </div>
       ))}
       <style jsx>{`
@@ -22,6 +37,9 @@ export default function Home({ results }: Props) {
           grid-template-columns: 1fr 1fr;
           padding: 20px;
           gap: 20px;
+        }
+        .movie {
+          cursor: pointer;
         }
         .movie img {
           max-width: 100%;
@@ -42,7 +60,9 @@ export default function Home({ results }: Props) {
 }
 
 export async function getServerSideProps() {
-  const { results } = await (await fetch(`/api/movies`)).json();
+  const { results } = await (
+    await fetch(`http://localhost:3000/api/movies`)
+  ).json();
   return {
     props: {
       results,
